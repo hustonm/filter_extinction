@@ -1,17 +1,19 @@
 import json
 import numpy as np
 import warnings
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 roman_filter_list = ['f062', 'f087', 'f106', 'f129', 'f158', 'f184', 'f213', 'f146']
 
 # Load up the Roman fit results
-with open('roman_fits_abs_AKs5.json', 'r') as f:
+with open(f'{current_dir}/roman_fits_abs_AKs5.json', 'r') as f:
     roman_fits_abs_AKs5 = json.load(f)
-with open('roman_fits_abs_AKs1.json', 'r') as f:
+with open(f'{current_dir}/roman_fits_abs_AKs1.json', 'r') as f:
     roman_fits_abs_AKs1 = json.load(f)
-with open('roman_fits_app_AKs5.json', 'r') as f:
+with open(f'{current_dir}/roman_fits_app_AKs5.json', 'r') as f:
     roman_fits_app_AKs5 = json.load(f)
-with open('roman_fits_app_AKs1.json', 'r') as f:
+with open(f'{current_dir}/roman_fits_app_AKs1.json', 'r') as f:
     roman_fits_app_AKs1 = json.load(f)
 
 def generic_extinction_polynomial(AKs_C, coeffs, order):
@@ -89,16 +91,16 @@ def get_roman_extinction_sim(catalog, low_extinction=False):
         colors = filt_fit['colors']
         coeffs = filt_fit['coefficients']
         order = filt_fit['order']
-        print(f"estimating {filt} extinction using {colors} and order={order} function"
+        print(f"estimating {filt} extinction using {colors} and order={order} function")
 
         columns = [catalog['A_Ks']]
         for c in colors:
             f1,f2 = c.split('_')
             columns.append(catalog[f1]-catalog[f2])
-        AKs_C = np.stack(columns)
+        AKs_C = np.stack(columns,axis=1)
         
         ext_filt = generic_extinction_polynomial(AKs_C, coeffs, order)
-        result[filt] = ext_filt
+        result['A_'+filt] = ext_filt
         
     return result
               
@@ -143,7 +145,7 @@ def get_roman_extinction_obs(catalog, low_extinction=False, nans=None):
         colors = filt_fit['colors']
         coeffs = filt_fit['coefficients']
         order = filt_fit['order']
-        print(f"estimating {filt} extinction using {colors} and order={order} function"
+        print(f"estimating {filt} extinction using {colors} and order={order} function")
 
         columns = [catalog['A_Ks']]
         for c in colors:

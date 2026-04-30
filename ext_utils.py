@@ -194,7 +194,7 @@ class ExtinctionCoefficientFitter():
             ax[i].text(0.05, 0.95, textstr, transform=ax[i].transAxes,
                     verticalalignment='top')
         ax[0].legend(loc=4)
-        ax[0].set_ylabel(r'$\Delta$'+filt+r'$_{true}$')
+        ax[0].set_ylabel(fr'$A_{{{filt},true}}$')
         
         os.makedirs('figures',exist_ok=True)
         print("saving figure")
@@ -566,8 +566,8 @@ class ExtinctionCoefficientFitter():
             ax[i].set_xscale('log')
 
         fig.colorbar(im1, ax=ax[1], label='AKs')
-        ax[0].set_ylabel(r'$\Delta$'+self.ext_fit_filter+r'$_{\rm fit}$'+
-                         r'- $\Delta$'+self.ext_fit_filter+r'$_{\rm true}$')
+        ax[0].set_ylabel(fr'$A_{{{self.ext_fit_filter},fit}}'
+                         fr'- A_{{{self.ext_fit_filter},true}}$')
         fig.savefig(f'{self.figure_dir}ext_corr_grid_{self.ext_fit_filter}.png')
         return fig,ax
 
@@ -602,13 +602,15 @@ class ExtinctionCoefficientFitter():
                 cat.loc[j,c+'_abs_spi'] = (mag_base[f1]-mag_base[f2])
         return cat
     
-    def plot_catalog_results(self, cat, maglim=None, ext=''):
-        cols = [f'{self.filters_short[i]}_{self.filters_short[i+1]}_abs_syn' 
-                for i in range(len(self.color_filter_list)-1)]
-        try:
+    def plot_catalog_results(self, cat, maglim=None, ext='', use_syn=False,
+                             use_app=False):
+        if use_syn:
             cat.loc[:,f'ext_{self.ext_fit_filter}_fit'] = self.best_fit_function(cat[['A_Ks', 
                         ]+[c+'_syn' for c in self.ext_fit_colors]].to_numpy())
-        except:
+        elif not use_app:
+            cat.loc[:,f'ext_{self.ext_fit_filter}_fit'] = self.best_fit_function(cat[['A_Ks', 
+                        ]+[c+'_spi' for c in self.ext_fit_colors]].to_numpy())
+        elif use_app:
             cat.loc[:,f'ext_{self.ext_fit_filter}_fit'] = self.best_fit_function(cat[['A_Ks', 
                         ]+[c+'_app_spi' for c in self.ext_fit_colors]].to_numpy())
         cat_obs_mag = cat[self.filter_synthpop_columns[self.filters_short.index(self.ext_fit_filter)]] \
@@ -626,5 +628,7 @@ class ExtinctionCoefficientFitter():
                    r'- $\Delta$'+self.ext_fit_filter+r'$_{\rm true}$')
         plt.xlabel('Teff (K)')
         plt.tight_layout()
+        if use_syn:
+            ext += '_syn'
         plt.savefig(f'{self.figure_dir}ext_cat_test_{self.ext_fit_filter}{ext}.png')
         return plt

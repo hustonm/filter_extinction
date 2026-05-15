@@ -9,7 +9,7 @@ import tqdm
 import string
 import pdb
 import re
-plt.rcParams['font.size'] = 14
+plt.rcParams['font.size'] = 16
 
 # Some simple filter functions for convenience
 def get_eff_lam(flt_name):
@@ -178,9 +178,9 @@ class ExtinctionCoefficientFitter():
             for logg in self.loggs:
                 idxs = (self.ext_grid['A_Ks']==AKs) & (self.ext_grid['logg']==logg)
                 ax[i].scatter(self.ext_grid['Teff'][idxs], self.ext_grid[f'ext_{filt}'][idxs], s=5, label=f'logg={logg:.1f}')
-            ax[i].set_title(f'A_Ks = {AKs:.2f}')
+            ax[i].set_title(fr'A$_{{\rm Ks}}$ = {AKs:.2f}', loc='left')
             ax[i].set_xticks([3e3,1e4,2e4])
-            ax[i].set_xlabel('Teff (K)')
+            ax[i].set_xlabel(r'T$_{\rm eff}$ (K)')
             ax[i].set_xscale('log')
             lam = get_eff_lam(self.filters_long[self.filters_short.index(filt)])
             alam_aks = getattr(self.red_law, self.red_law.name.split(',')[0])(lam/1e4, AKs)[0]
@@ -199,6 +199,49 @@ class ExtinctionCoefficientFitter():
         os.makedirs('figures',exist_ok=True)
         print("saving figure")
         fig.savefig(f'{self.figure_dir}/ext_true_{filt}.png')
+        return fig,ax
+    
+    def plot_extinction_difference(self, filt, A_Ks):
+        if isinstance(A_Ks, float) or isinstance(A_Ks, int):
+            A_Ks = [A_Ks]
+        fig, ax = plt.subplots(nrows=1, ncols=len(A_Ks),sharey=False, figsize=(5*len(A_Ks),5), layout='constrained')
+        for i,AKs in enumerate(A_Ks):
+            ax[i].set_title(fr'A$_{{\rm Ks}}$ = {AKs:.2f}', loc='left')
+            ax[i].set_xticks([2e3,5e3,1e4])
+            ax[i].set_xlabel(r'T$_{\rm eff}$ (K)')
+            ax[i].set_xscale('log')
+            lam_eff = get_eff_lam(self.filters_long[self.filters_short.index(filt)])
+            alam_aks_eff = getattr(self.red_law, self.red_law.name.split(',')[0])(lam_eff/1e4, AKs)[0]
+            lam_piv = get_piv_lam(self.filters_long[self.filters_short.index(filt)])
+            alam_aks_piv = getattr(self.red_law, self.red_law.name.split(',')[0])(lam_piv/1e4, AKs)[0]
+            lam_avg = get_avg_lam(self.filters_long[self.filters_short.index(filt)])
+            alam_aks_avg = getattr(self.red_law, self.red_law.name.split(',')[0])(lam_avg/1e4, AKs)[0]
+            
+            ax[i].plot([2500,10_000], [0,0], c='gray')
+            for j,logg in enumerate(self.loggs):
+                idxs = (self.ext_grid['A_Ks']==AKs) & (self.ext_grid['logg']==logg)
+                ls = ['-',':'][j]
+                lab = [fr'$\lambda_{{\rm eff,Vega}}$ ({lam_eff/1e4:.3f} $\mu$m)', None][j]
+                ax[i].plot(self.ext_grid['Teff'][idxs], alam_aks_eff -  self.ext_grid[f'ext_{filt}'][idxs], 
+                           label=lab,
+                           linestyle=ls, c='C0')
+                lab = [fr'$\lambda_{{\rm pivot}}$ ({lam_piv/1e4:.3f} $\mu$m)', None][j]
+                ax[i].plot(self.ext_grid['Teff'][idxs], alam_aks_piv -  self.ext_grid[f'ext_{filt}'][idxs], 
+                           label=lab,
+                           linestyle=ls, c='C1')
+                lab = [fr'$\lambda_{{\rm average}}$ ({lam_avg/1e4:.3f} $\mu$m)', None][j]
+                ax[i].plot(self.ext_grid['Teff'][idxs], alam_aks_avg -  self.ext_grid[f'ext_{filt}'][idxs], 
+                           label=lab,
+                           linestyle=ls, c='C2')
+
+        ax[1].legend(fontsize=14)#loc=1)
+        ax[0].set_ylabel(fr'$A_{{\lambda, eff}} - A_{{{filt},true}}$')
+        ax[0].set_xlim(2500,10_000)
+        ax[1].set_xlim(2500,10_000)
+        
+        os.makedirs('figures',exist_ok=True)
+        print("saving figure")
+        fig.savefig(f'{self.figure_dir}/ext_true_diff_{filt}.png')
         return fig,ax
 
     

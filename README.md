@@ -9,3 +9,11 @@ to create a more accurate estimate of the extinction coefficient as a function o
 corrections the other Roman filters and for both absolute and apparent colors with different observed filter combinations.
 
 This code may be modified to compute corrections for alternate filter sets and/or to use a different extinction law.
+
+`extinction_estimator.py` provides functions to perform the extinction estimation on simulated or observed colors and A\_Ks
+
+`ext_utils.py` contains the functions used to generate the color and extinction grids from model spectra, perform the fits, and to cleanly format the results
+
+`roman_fitting_notebooks` contains Jupyter notebooks where the extinction estimator fits were run and diagnostics were plotted
+
+`roman_fits_abs_AKs5.json` and similar files hold the results of the fits and get used by `extinction_estimator.py`.

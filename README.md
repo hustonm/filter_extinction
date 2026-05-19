@@ -16,4 +16,4 @@ This code may be modified to compute corrections for alternate filter sets and/o
 
 `roman_fitting_notebooks` contains Jupyter notebooks where the extinction estimator fits were run and diagnostics were plotted
 
-`roman_fits_abs_AKs5.json` and similar files hold the results of the fits and get used by `extinction_estimator.py`.
+`roman_fits_abs_AKs5.json` and the other json files hold the results of the fits and get used by `extinction_estimator.py`

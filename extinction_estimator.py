@@ -74,7 +74,7 @@ def get_roman_extinction_sim(catalog, low_extinction=False):
     Returns:
     --------
     extinctions : dict
-        entries of '<filter>':[<ext_star1>, <ext_star2>, ...] for each filter
+        entries of 'A_<filter>':[<ext_star1>, <ext_star2>, ...] for each filter
     """
     # Select the appropriate fit_dict
     fit_dict = roman_fits_abs_AKs5
